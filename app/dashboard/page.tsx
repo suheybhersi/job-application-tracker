@@ -1,4 +1,7 @@
+import KanbanBoard from "@/components/kanban-board";
 import { getSession } from "@/lib/auth/auth";
+import connectDB from "@/lib/db";
+import { Board } from "@/lib/models";
 import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
@@ -8,20 +11,27 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
+  await connectDB();
+
+  const board = await Board.findOne({
+    userId: session.user.id,
+    name: "Job Hunt",
+  }).populate({
+    path: "columns",
+  });
+
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      <main className="flex-1">
-        <section className="container mx-auto px-4 py-32">
-          <div className="mx-auto max-w-4xl text-center">
-            <h1 className="text-black mb-6 text-6xl font-bold">
-              Welcome to your dashboard.
-            </h1>
-            <p className="text-muted-foreground mb-10 text-xl">
-              Here you can manage your job applications and track your progress.
-            </p>
-          </div>
-        </section>
-      </main>
+    <div className="min-h-screen bg-white">
+      <div className="container mx-auto p-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-black">{board?.name}</h1>
+          <p className="text-gray-600">Track your job applications</p>
+          <KanbanBoard
+            board={JSON.parse(JSON.stringify(board))}
+            userId={session.user.id}
+          />
+        </div>
+      </div>
     </div>
   );
 }
