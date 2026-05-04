@@ -1,6 +1,6 @@
 "use client";
 
-import { Board, Column } from "@/lib/models/model.types";
+import { Board, Column, JobApplication } from "@/lib/models/model.types";
 import {
   Award,
   Calendar,
@@ -19,6 +19,8 @@ import {
 } from "./ui/dropdown-menu";
 import CreateJobApplicationDialog from "./create-job-dialog";
 import { Button } from "./ui/button";
+import JobApplicationCard from "./job-application-card";
+import { useBoard } from "@/lib/hooks/useBoards";
 
 interface KanbanBoardProps {
   board: Board; // Replace with your actual board type
@@ -57,11 +59,16 @@ function DroppableColumn({
   column,
   config,
   boardId,
+  sortedColumns,
 }: {
   column: Column;
   config: ColConfig;
   boardId: string;
+  sortedColumns: Column[];
 }) {
+  const sortedJobs =
+    column.jobApplications.sort((a, b) => a.order - b.order) || [];
+
   return (
     <Card className="min-w-[300px] flex-shrink-0 shadow-md p-0">
       <CardHeader
@@ -95,14 +102,38 @@ function DroppableColumn({
       </CardHeader>
 
       <CardContent className="space-y-2 pt-4 bg-gray-50/50 min-h-[400px] rounded-b-lg">
-        <CreateJobApplicationDialog ColumnId={column._id} boardId={boardId} />
+        {sortedJobs.map((job, key) => (
+          <SortableJobCard
+            key={key}
+            job={{ ...job, columnId: column._id }}
+            columns={sortedColumns}
+          />
+        ))}
+
+        <CreateJobApplicationDialog columnId={column._id} boardId={boardId} />
       </CardContent>
     </Card>
   );
 }
 
+function SortableJobCard({
+  job,
+  columns,
+}: {
+  job: JobApplication;
+  columns: Column[];
+}) {
+  return (
+    <div>
+      <JobApplicationCard job={job} columns={columns} />
+    </div>
+  );
+}
+
 export default function KanbanBoard({ board, userId }: KanbanBoardProps) {
-  const columns = board.columns;
+  const { columns, moveJob } = useBoard(board);
+
+  const sortedColumns = columns?.sort((a, b) => a.order - b.order) || [];
 
   return (
     <>
@@ -119,6 +150,7 @@ export default function KanbanBoard({ board, userId }: KanbanBoardProps) {
                 column={col}
                 config={config}
                 boardId={board._id}
+                sortedColumns={sortedColumns}
               />
             );
           })}
