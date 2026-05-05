@@ -3,11 +3,10 @@ import { Board, Column } from "./models";
 import jobApplication from "./models/job-application";
 
 const DEFAULT_COLUMNS = [
-  { name: "Wishlist", order: 0 },
-  { name: "Applied", order: 1 },
-  { name: "Interviewing", order: 2 },
-  { name: "Offered", order: 3 },
-  { name: "Rejected", order: 4 },
+  { name: "Applied", order: 0 },
+  { name: "Interviewing", order: 1 },
+  { name: "Offered", order: 2 },
+  { name: "Rejected", order: 3 },
 ];
 
 export async function initUserBoard(userId: string) {
